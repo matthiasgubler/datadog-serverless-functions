@@ -17,8 +17,8 @@ const INVALID = 'invalid';
 const JSON_TYPE = 'json';
 const STRING_TYPE = 'string';
 
-const DD_API_KEY = process.env.DD_API_KEY || '<DATADOG_API_KEY>';
-const DD_SITE = process.env.DD_SITE || 'datadoghq.com';
+const DD_API_KEY = process.env.DD_API_KEY || 'xx';
+const DD_SITE = process.env.DD_SITE || 'datad0g.com';
 const DD_HTTP_URL = process.env.DD_URL || 'http-intake.logs.' + DD_SITE;
 const DD_HTTP_PORT = process.env.DD_PORT || 443;
 const DD_TAGS = process.env.DD_TAGS || ''; // Replace '' by your comma-separated list of tags
@@ -232,7 +232,7 @@ class Scrubber {
 class BlobStorageLogHandler {
     constructor(context) {
         this.context = context;
-        this.logSplittingConfig = getLogSplittingConfig();
+    this.logSplittingConfig = getLogSplittingConfig();
         this.records = [];
     }
 
@@ -545,7 +545,7 @@ class BlobStorageLogHandler {
     }
 }
 
-module.exports = async function(context, blobContent) {
+async function run(context, blobContent) {
     if (!DD_API_KEY || DD_API_KEY === '<DATADOG_API_KEY>') {
         context.log.error(
             'You must configure your API key before starting this function (see ## Parameters section)'
@@ -566,6 +566,7 @@ module.exports = async function(context, blobContent) {
             .trim()
             .split('\n');
     }
+    logs = logs.map(log => JSON.parse(log.replace(/'/g, '"')));
 
     try {
         var handler = new BlobStorageLogHandler(context);
@@ -584,6 +585,19 @@ module.exports = async function(context, blobContent) {
 
     context.done();
 };
+
+const fs = require('fs');
+
+const data = fs.readFileSync('/Users/nina.rei/Downloads/azure_log_0516.json', 'utf8');
+const context = {
+    log: console,
+    executionContext: {
+        functionName: 'test'
+    },
+    done: () => { }
+};
+
+run(context, data);
 
 module.exports.forTests = {
     BlobStorageLogHandler,
